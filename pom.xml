@@ -102,6 +102,13 @@
             <artifactId>mybatis-plus-jsqlparser</artifactId>
             <version>3.5.12</version> <!-- 确保版本和 MyBatis Plus 主包一致 -->
         </dependency>
+        <!-- markdown文档读取器-->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-markdown-document-reader</artifactId>
+            <version>1.0.0-M6</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

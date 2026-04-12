@@ -2,16 +2,19 @@ package org.example.zjzaiagent.advisor;
 
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
-import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
-import org.springframework.ai.chat.client.advisor.api.BaseAdvisor;
+import org.springframework.ai.chat.client.advisor.api.CallAdvisor;
+import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
+import org.springframework.ai.chat.client.advisor.api.StreamAdvisor;
+import org.springframework.ai.chat.client.advisor.api.StreamAdvisorChain;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import reactor.core.publisher.Flux;
 
 import java.util.Map;
 
 /**
  * Re2拦截器
  */
-public class ReReadingAdvisor implements BaseAdvisor {
+public class ReReadingAdvisor implements CallAdvisor, StreamAdvisor {
 
     private static final String DEFAULT_RE2_ADVISE_TEMPLATE = """
 			{re2_input_query}
@@ -31,7 +34,18 @@ public class ReReadingAdvisor implements BaseAdvisor {
     }
 
     @Override
-    public ChatClientRequest before(ChatClientRequest chatClientRequest, AdvisorChain advisorChain) {
+    public ChatClientResponse adviseCall(ChatClientRequest chatClientRequest, CallAdvisorChain chain) {
+        ChatClientRequest modifiedRequest = before(chatClientRequest);
+        return chain.nextCall(modifiedRequest);
+    }
+
+    @Override
+    public Flux<ChatClientResponse> adviseStream(ChatClientRequest chatClientRequest, StreamAdvisorChain chain) {
+        ChatClientRequest modifiedRequest = before(chatClientRequest);
+        return chain.nextStream(modifiedRequest);
+    }
+
+    private ChatClientRequest before(ChatClientRequest chatClientRequest) {
         String augmentedUserText = PromptTemplate.builder()
                 .template(this.re2AdviseTemplate)
                 .variables(Map.of("re2_input_query", chatClientRequest.prompt().getUserMessage().getText()))
@@ -44,8 +58,8 @@ public class ReReadingAdvisor implements BaseAdvisor {
     }
 
     @Override
-    public ChatClientResponse after(ChatClientResponse chatClientResponse, AdvisorChain advisorChain) {
-        return chatClientResponse;
+    public String getName() {
+        return this.getClass().getSimpleName();
     }
 
     @Override

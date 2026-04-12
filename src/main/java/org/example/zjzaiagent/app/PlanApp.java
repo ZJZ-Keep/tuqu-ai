@@ -1,18 +1,26 @@
 package org.example.zjzaiagent.app;
 
+import com.alibaba.cloud.ai.dashscope.rag.DashScopeDocumentRetrievalAdvisor;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.zjzaiagent.advisor.MyLoggerAdvisor;
 import org.example.zjzaiagent.advisor.MySafeGuardAdvisor;
 import org.example.zjzaiagent.chatmemoy.FileBasedChatMemory;
 import org.example.zjzaiagent.chatmemoy.MySQLChatMemory;
+import org.example.zjzaiagent.rag.PlanAppRagCloudConfig;
+import org.example.zjzaiagent.rag.PlanAppVectorStoreConfig;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.RetrievalAugmentationAdvisor;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -73,7 +81,6 @@ public class PlanApp {
         assert response != null;
         String content = response.getResult().getOutput().getText();
         log.info("[PlanApp] content: {}", content);
-       // mySQLChatMemory.add(chatId, response.getResult().getOutput());
         return content;
     }
 
@@ -94,5 +101,37 @@ public class PlanApp {
         assert report != null;
         log.info("[PlanApp] report: {}", report);
         return report;
+    }
+    /**
+     * rag检索对话
+     * @param message
+     * @param chatId
+     * @return
+     */
+    @Resource
+    private VectorStore planAppVectorStore;
+    @Resource
+    private DashScopeDocumentRetrievalAdvisor planAppDashScopeAdvisor;
+    public String doChatWithRag(String message, String chatId) {
+        // 调整检索参数，降低阈值提高灵敏度
+        SearchRequest searchRequest = SearchRequest.builder()
+                .similarityThreshold(0.2)
+                .topK(10)
+                .build();
+        // 先调用 RAG 检索，再调用其他 advisor
+        ChatResponse response = chatClient.prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                /*//  rag 检索对话
+                .advisors(new QuestionAnswerAdvisor(planAppVectorStore, searchRequest))*/
+                // rag 检索增强
+                .advisors(planAppDashScopeAdvisor)
+                .advisors(MyLoggerAdvisor.builder().build())
+                .call()
+                .chatResponse();
+        assert response != null;
+        String content = response.getResult().getOutput().getText();
+        log.info("[PlanApp] content: {}", content);
+        return content;
     }
 }

@@ -2,6 +2,7 @@ package org.example.zjzaiagent.chatmemoy;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import dev.langchain4j.agent.tool.P;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.zjzaiagent.domain.Logger;
@@ -25,6 +26,15 @@ public class MySQLChatMemory implements ChatMemory {
     @Resource
     private LoggerMapper loggerMapper;
 
+    private final int maxMessage;
+
+    public MySQLChatMemory() {
+        this.maxMessage = 10;
+    }
+
+    public MySQLChatMemory(int maxMessage) {
+        this.maxMessage = maxMessage;
+    }
     /**
      * 添加一个数据到数据库中
      * @param conversationId
@@ -66,12 +76,12 @@ public class MySQLChatMemory implements ChatMemory {
      */
     @Override
     public List<Message> get(String conversationId) {
+        Page<Logger> page = new Page<>(1, maxMessage);
         QueryWrapper<Logger> wrapper = new QueryWrapper<>();
         wrapper.eq("id", conversationId)
                 .orderByDesc("time");
 
-        List<Logger> loggerList = loggerMapper.selectList(wrapper);
-
+        List<Logger> loggerList = loggerMapper.selectPage(page, wrapper).getRecords();
         if (loggerList == null || loggerList.isEmpty()) {
             return new ArrayList<>();
         }
@@ -91,7 +101,7 @@ public class MySQLChatMemory implements ChatMemory {
      * @param lastN
      * @return
      */
-    public List<Message> getList(String conversationId, int lastN) {
+    public List<Message> get(String conversationId, int lastN) {
         Page<Logger> page = new Page<>(1, lastN);
         QueryWrapper<Logger> wrapper = new QueryWrapper<>();
         wrapper.eq("id", conversationId)
@@ -105,6 +115,17 @@ public class MySQLChatMemory implements ChatMemory {
             messages.add(MessageSerializer.deserialize(logger.getMessage()));
         }
         return messages;
+    }
+
+    /**
+     * 从数据库中获取数据
+     * 从数据库中获取倒数lastN条数据
+     * @param conversationId
+     * @param lastN
+     * @return
+     */
+    public List<Message> getList(String conversationId, int lastN) {
+        return get(conversationId, lastN);
     }
 
     /**

@@ -66,12 +66,6 @@ public class FileBasedChatMemory implements ChatMemory {
         saveConversation(conversationId, conversationMessages);
     }
 
-    public List<Message> get(String conversationId, int lastN) {
-        List<Message> allMessages = getOrCreateConversation(conversationId);
-        int size = allMessages.size();
-        int startIndex = Math.max(0, size - Math.min(lastN, maxMessages));
-        return allMessages.subList(startIndex, size);
-    }
 
     @Override
     public List<Message> get(String conversationId) {
