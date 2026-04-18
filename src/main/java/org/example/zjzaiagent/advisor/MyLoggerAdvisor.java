@@ -49,7 +49,7 @@ public class MyLoggerAdvisor implements CallAdvisor, StreamAdvisor {
     }
 
     public int getOrder() {
-        return 0;
+        return 1;
     }
 
     public String toString() {

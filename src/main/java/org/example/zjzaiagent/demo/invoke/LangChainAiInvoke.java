@@ -1,4 +1,4 @@
-package org.example.zjzaiagent.deom.invoke;
+package org.example.zjzaiagent.demo.invoke;
 
 import dev.langchain4j.community.model.dashscope.QwenChatModel;
 import dev.langchain4j.model.chat.ChatLanguageModel;

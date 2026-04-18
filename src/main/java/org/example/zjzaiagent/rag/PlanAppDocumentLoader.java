@@ -36,11 +36,14 @@ public class PlanAppDocumentLoader {
             Resource[] resources = planAppDocumentLoader.getResources("classpath:documents/*.md");
             for (Resource resource : resources) {
                 String filename = resource.getFilename();
+                // 获取文件状态
+                String status = filename.substring(0,2);
                 // 创建MarkdownDocumentReaderConfig
                 MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
                         .withIncludeBlockquote(false)
                         .withIncludeCodeBlock(false)
                         .withAdditionalMetadata("filename", filename)
+                        .withAdditionalMetadata("status",status)
                         .build();
                 // 创建MarkdownDocumentReader
                 MarkdownDocumentReader reader = new MarkdownDocumentReader(resource,config);

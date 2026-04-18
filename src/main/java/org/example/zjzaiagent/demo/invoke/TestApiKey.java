@@ -1,4 +1,4 @@
-package org.example.zjzaiagent.deom.invoke;
+package org.example.zjzaiagent.demo.invoke;
 
 public interface TestApiKey {
     /**
