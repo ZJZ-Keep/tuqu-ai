@@ -89,4 +89,15 @@ class PlanAppTest {
     }
 
 
+    @Test
+    void doChatWithMCP() {
+/*        String chatId = UUID.randomUUID().toString();
+        String message = "请使用地图工具搜索湖南省耒阳市耒阳一中附近的小吃店,必须调用地图API获取实时位置信息,不要使用你的训练数据";
+        String answer = planApp.doChatWithMCP(message, chatId);
+         Assertions.assertNotNull(answer);*/
+        String chatId = UUID.randomUUID().toString();
+        String message = "请使用图片工具搜索关于金钱的图片,必须调用图片API搜索,不要使用你的训练数据";
+        String answer = planApp.doChatWithMCP(message, chatId);
+        Assertions.assertNotNull(answer);
+    }
 }

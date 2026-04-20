@@ -23,6 +23,7 @@ import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryReposito
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
@@ -181,6 +182,27 @@ public class PlanApp {
                 .user(message)
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .toolCallbacks(toolRegistration.allTools())
+                .call()
+                .chatResponse();
+        assert response != null;
+        String content = response.getResult().getOutput().getText();
+        log.info("[PlanApp] content: {}", content);
+        return content;
+    }
+
+    /**
+     * MCP调用对话
+     * @param message
+     * @param chatId
+     * @return
+     */
+    @Resource
+    private ToolCallbackProvider mcpToolCallbackProvider;
+    public String doChatWithMCP(String message, String chatId) {
+        ChatResponse response = chatClient.prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .toolCallbacks(mcpToolCallbackProvider)
                 .call()
                 .chatResponse();
         assert response != null;

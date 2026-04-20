@@ -17,6 +17,10 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.model.ModelOptionsUtils;
 import org.springframework.lang.Nullable;
 import reactor.core.publisher.Flux;
+/**
+ * 自定义日志 Advisor
+ * 打印 info 级别日志、只输出单次用户提示词和 AI 回复的文本
+ */
 @Slf4j
 public class MyLoggerAdvisor implements CallAdvisor, StreamAdvisor {
     @NotNull
@@ -34,22 +38,33 @@ public class MyLoggerAdvisor implements CallAdvisor, StreamAdvisor {
         return (new ChatClientMessageAggregator()).aggregateChatClientResponse(chatClientResponses, this::logResponse);
     }
 
-    protected void logRequest(ChatClientRequest request) {
+    protected ChatClientRequest logRequest(ChatClientRequest request) {
         log.info("AI Request: {}", request.prompt().getUserMessage().getText());
+        return request;
     }
 
     protected void logResponse(ChatClientResponse chatClientResponse) {
         if (chatClientResponse.chatResponse() != null) {
             log.info("AI Response: {}", chatClientResponse.chatResponse().getResult().getOutput().getText());
+            // 记录工具调用信息
+            var response = chatClientResponse.chatResponse();
+            if (response.getResults() != null && !response.getResults().isEmpty()) {
+                var toolCalls = response.getResults().get(0).getOutput().getToolCalls();
+                if (toolCalls != null && !toolCalls.isEmpty()) {
+                    log.info("Tool calls triggered: {}", toolCalls);
+                } else {
+                    log.info("No tool calls were triggered");
+                }
+            }
         }
     }
 
     public String getName() {
-        return this.getClass().getName();
+        return this.getClass().getSimpleName();
     }
 
     public int getOrder() {
-        return 1;
+        return 0;
     }
 
     public String toString() {

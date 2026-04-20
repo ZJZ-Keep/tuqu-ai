@@ -1,7 +1,7 @@
 package org.example.zjzaiagent.tools;
 
 import org.springframework.ai.tool.ToolCallback;
-import org.springframework.ai.tool.ToolCallbacks;
+import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +31,7 @@ public class ToolRegistration {
         TerminalOperationTool terminalOperationTool = new TerminalOperationTool();
         PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
         QQEmailSendTool qqEmailSendTool = new QQEmailSendTool(FROM_EMAIL, AUTH_CODE,SMTP_HOST,SMTP_PORT);
-        return ToolCallbacks.from(
+        return MethodToolCallbackProvider.builder().toolObjects(
             fileOperationTool,
             webSearchTool,
             webScrapingTool,
@@ -39,6 +39,6 @@ public class ToolRegistration {
             terminalOperationTool,
             pdfGenerationTool,
                 qqEmailSendTool
-        );
+        ).build().getToolCallbacks();
     }
 }
