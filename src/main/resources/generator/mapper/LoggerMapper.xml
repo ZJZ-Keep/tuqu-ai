@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.zjzaiagent.mapper.LoggerMapper">
+
+    <resultMap id="BaseResultMap" type="org.example.zjzaiagent.domain.Logger">
+            <result property="id" column="id" />
+            <result property="message" column="message" />
+            <result property="time" column="time" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,message,time
+    </sql>
+</mapper>

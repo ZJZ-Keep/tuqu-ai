@@ -31,6 +31,7 @@ public class ToolRegistration {
         TerminalOperationTool terminalOperationTool = new TerminalOperationTool();
         PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
         QQEmailSendTool qqEmailSendTool = new QQEmailSendTool(FROM_EMAIL, AUTH_CODE,SMTP_HOST,SMTP_PORT);
+        TerminateTool terminateTool = new TerminateTool();
         return MethodToolCallbackProvider.builder().toolObjects(
             fileOperationTool,
             webSearchTool,
@@ -38,7 +39,8 @@ public class ToolRegistration {
             resourceDownloadTool,
             terminalOperationTool,
             pdfGenerationTool,
-                qqEmailSendTool
+                qqEmailSendTool,
+                terminateTool
         ).build().getToolCallbacks();
     }
 }

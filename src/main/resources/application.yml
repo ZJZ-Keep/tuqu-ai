@@ -20,7 +20,7 @@ spring:
       client:
         enabled: true
         type: ASYNC
-        request-timeout: 60s
+        request-timeout: 120s
         toolcallback:
           enabled: true
         #stdio
@@ -30,7 +30,7 @@ spring:
         sse:
           connections:
             servers1:
-              url: http://localhost:8127
+              url: http://47.120.65.115:8127
 server:
   port: 8081
   servlet:
