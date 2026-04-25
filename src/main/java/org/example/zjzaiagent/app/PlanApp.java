@@ -5,30 +5,20 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.zjzaiagent.advisor.MyLoggerAdvisor;
 import org.example.zjzaiagent.advisor.MySafeGuardAdvisor;
-import org.example.zjzaiagent.chatmemoy.FileBasedChatMemory;
 import org.example.zjzaiagent.chatmemoy.MySQLChatMemory;
-import org.example.zjzaiagent.rag.PlanAppRagCloudConfig;
-import org.example.zjzaiagent.rag.PlanAppRagCustomAdvisorFactory;
-import org.example.zjzaiagent.rag.PlanAppVectorStoreConfig;
 import org.example.zjzaiagent.rag.QueryRewriter;
 import org.example.zjzaiagent.tools.ToolRegistration;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
-import org.springframework.ai.chat.client.advisor.RetrievalAugmentationAdvisor;
-import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.MessageWindowChatMemory;
-import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
-import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -88,6 +78,21 @@ public class PlanApp {
         return content;
     }
 
+    /**
+     * 执行对话(sse流式输出)
+     * @param message
+     * @param chatId
+     * @return
+     */
+    public Flux<String> doChatStream(String message, String chatId) {
+        Flux<String> content = chatClient.prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .stream()
+                .content();
+        log.info("[PlanApp] content: {}", content);
+        return content;
+    }
 
 
     /**

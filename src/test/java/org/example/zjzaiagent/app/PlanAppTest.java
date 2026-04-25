@@ -19,7 +19,9 @@ class PlanAppTest {
         //第一轮
         String chatId = UUID.randomUUID().toString();
         //String message = "我要去上海，7天";
-        String message = "你是我做的一个ai智能体，现在我要存到github的Description里，给我生成一个你的介绍，以便让别人了解我做的你这个智能体";
+       // String message = "你是我做的一个ai智能体，现在我要存到github的Description里，给我生成一个你的介绍，以便让别人了解我做的你这个智能体";
+        String message = "我是谁";
+
         String chat = planApp.doChat(message, chatId);
         Assertions.assertNotNull(chat);
 /*        //第二轮
