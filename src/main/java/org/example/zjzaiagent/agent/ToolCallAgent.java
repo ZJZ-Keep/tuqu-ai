@@ -5,7 +5,6 @@ import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
@@ -13,7 +12,6 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.model.tool.DefaultToolCallingManager;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.model.tool.ToolExecutionResult;
 import org.springframework.ai.tool.ToolCallback;
@@ -33,6 +31,7 @@ public class ToolCallAgent extends ReActAgent{
     private ToolCallingManager toolCallingManager;
 
     //调用工具的响应
+    //todo
     private ChatResponse toolCallChatResponse;
 
     //禁用spring ai 内置的工具调用机制，改用自定义的
@@ -43,8 +42,9 @@ public class ToolCallAgent extends ReActAgent{
         this.availableTools = availableTools;
         this.toolCallingManager = ToolCallingManager.builder().build();
         this.chatOptions = DashScopeChatOptions.builder()
-        .withInternalToolExecutionEnabled(false)
-        .build();
+                .withInternalToolExecutionEnabled(false)
+                .build();
+
     }
 
     /**
@@ -60,7 +60,7 @@ public class ToolCallAgent extends ReActAgent{
         List<Message> messageList = getMessages();
         Prompt prompt = new Prompt(messageList,chatOptions);
         try {
-            //获取带工具选项的响应（意图）
+            //获取带工具选项的响应
             ChatResponse chatResponse = getChatClient().prompt(prompt)
                     .system(getSystemPrompt())
                     .toolCallbacks(availableTools)
