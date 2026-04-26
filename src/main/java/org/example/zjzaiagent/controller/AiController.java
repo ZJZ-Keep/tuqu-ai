@@ -38,7 +38,9 @@ public class AiController {
      */
     @GetMapping(value = "/plan_app/chat/Sse",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> chatStreamSSE(String message, String chatId) {
-        return planApp.doChatStream(message, chatId);
+        return planApp.doChatStream(message, chatId)
+                .map(chunk -> "data: " + chunk + "\n\n")
+                .concatWith(Flux.just("data: [DONE]\n\n"));
     }
     /**
      * 流式输出对话（map）

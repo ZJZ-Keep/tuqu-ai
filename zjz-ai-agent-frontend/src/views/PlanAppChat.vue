@@ -11,7 +11,7 @@
       >
         <div v-if="!msg.isUser" class="avatar ai-avatar">AI</div>
         <div v-else class="avatar">你</div>
-        <div class="message-content">{{ msg.content }}</div>
+        <div class="message-content" v-html="formatContent(msg.content)"></div>
       </div>
     </div>
     <div class="chat-input">
@@ -40,6 +40,23 @@ const inputMessage = ref('')
 const isLoading = ref(false)
 const chatId = ref('')
 let eventSource = null
+
+// 格式化消息内容
+const formatContent = (content) => {
+  // 检查是否是 JSON 格式
+  if (content.startsWith('{') || content.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(content)
+      // 格式化 JSON
+      return `<pre>${JSON.stringify(parsed, null, 2)}</pre>`
+    } catch (e) {
+      // 不是有效的 JSON，直接返回
+      return content
+    }
+  }
+  // 处理普通文本，添加换行和空格
+  return content.replace(/\n/g, '<br>')
+}
 
 // 生成聊天室ID
 const generateChatId = () => {
@@ -70,20 +87,48 @@ const sendMessage = () => {
   
   eventSource.onmessage = (event) => {
     const data = event.data
-    if (data === '[DONE]') {
+    // 处理 SSE 格式，移除 data: 前缀
+    const content = data.replace(/^data: /, '').trim()
+    if (content === '[DONE]') {
       eventSource.close()
       isLoading.value = false
     } else {
-      // 打字机效果，在同一个气泡中拼接消息
-      messages.value[aiMessageIndex].content += data
+      // 处理可能的编码问题
+      // 直接使用原始数据，现代浏览器会自动处理编码
+      messages.value[aiMessageIndex].content += content
     }
+  }
+  
+  eventSource.onopen = () => {
+    console.log('SSE 连接已建立')
   }
   
   eventSource.onerror = (error) => {
     console.error('SSE Error:', error)
-    eventSource.close()
-    isLoading.value = false
-    messages.value[aiMessageIndex].content += '\n\n连接出错，请重试'
+    // 检查连接状态，如果是正常关闭则不显示错误
+    // readyState === 2 表示连接已关闭
+    if (eventSource.readyState === 2) {
+      console.log('SSE 连接正常关闭')
+      isLoading.value = false
+    } else {
+      // 检查是否已经收到了有效的数据
+      const hasReceivedData = messages.value[aiMessageIndex].content !== ''
+      
+      // 无论如何都关闭连接
+      try {
+        eventSource.close()
+      } catch (e) {
+        console.log('EventSource 已经关闭')
+      }
+      
+      // 只有在未收到任何数据的情况下才显示错误消息
+      if (!hasReceivedData) {
+        messages.value[aiMessageIndex].content += '连接出错，请重试'
+      }
+      
+      // 重置加载状态
+      isLoading.value = false
+    }
   }
 }
 
