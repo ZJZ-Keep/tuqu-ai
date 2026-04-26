@@ -130,6 +130,8 @@ public abstract class BaseAgent {
                     resultList.add("超出最大步骤限制：" + MaxSteps);
                     sseEmitter.send("超出最大步骤限制：" + MaxSteps);
                 }
+                // 任务正常完成，关闭SSE连接
+                sseEmitter.complete();
             } catch (Exception e) {
                 this.agentStatus = AgentStatus.ERROR;
                 log.info("执行出错：" + e.getMessage());

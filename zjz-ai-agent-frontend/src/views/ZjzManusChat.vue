@@ -40,6 +40,18 @@ const inputMessage = ref('')
 const isLoading = ref(false)
 let eventSource = null
 
+// 重置加载状态的函数
+const resetLoadingState = () => {
+  isLoading.value = false
+  if (eventSource) {
+    try {
+      eventSource.close()
+    } catch (e) {
+      console.log('EventSource 已经关闭')
+    }
+  }
+}
+
 // 发送消息
 const sendMessage = () => {
   if (!inputMessage.value.trim() || isLoading.value) return
@@ -58,21 +70,43 @@ const sendMessage = () => {
   
   eventSource = new EventSource(url)
   
+  // 设置超时机制，确保isLoading能够被重置
+  const timeoutId = setTimeout(() => {
+    if (isLoading.value) {
+      console.log('SSE 连接超时，重置加载状态')
+      resetLoadingState()
+    }
+  }, 60000) // 60秒超时
+  
   eventSource.onmessage = (event) => {
     const data = event.data
     if (data === '[DONE]') {
-      eventSource.close()
-      isLoading.value = false
+      clearTimeout(timeoutId)
+      resetLoadingState()
     } else {
       // 步骤式气泡，每个步骤一个气泡，且添加多余的换行
       messages.value.push({ isUser: false, content: data + '\n' })
+      
+      // 检查是否包含任务结束的消息
+      if (data.includes('任务结束') || data.includes('圆满结束') || 
+          data.includes('任务已完成') || data.includes('已成功生成')) {
+        // 延迟一点时间关闭连接，确保所有数据都已接收
+        setTimeout(() => {
+          clearTimeout(timeoutId)
+          resetLoadingState()
+        }, 500)
+      }
     }
   }
   
+  eventSource.onopen = () => {
+    console.log('SSE 连接已建立')
+  }
+  
   eventSource.onerror = (error) => {
+    clearTimeout(timeoutId)
     console.error('SSE Error:', error)
-    eventSource.close()
-    isLoading.value = false
+    resetLoadingState()
     messages.value.push({ isUser: false, content: '连接出错，请重试\n' })
   }
 }
@@ -86,8 +120,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (eventSource) {
-    eventSource.close()
-  }
+  resetLoadingState()
 })
 </script>

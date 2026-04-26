@@ -85,17 +85,45 @@ const sendMessage = () => {
   
   eventSource = new EventSource(url)
   
+  // 设置超时机制，确保isLoading能够被重置
+  const timeoutId = setTimeout(() => {
+    if (isLoading.value) {
+      console.log('SSE 连接超时，重置加载状态')
+      try {
+        eventSource.close()
+      } catch (e) {
+        console.log('EventSource 已经关闭')
+      }
+      isLoading.value = false
+    }
+  }, 30000) // 30秒超时
+  
   eventSource.onmessage = (event) => {
     const data = event.data
     // 处理 SSE 格式，移除 data: 前缀
     const content = data.replace(/^data: /, '').trim()
     if (content === '[DONE]') {
+      clearTimeout(timeoutId)
       eventSource.close()
       isLoading.value = false
     } else {
       // 处理可能的编码问题
       // 直接使用原始数据，现代浏览器会自动处理编码
       messages.value[aiMessageIndex].content += content
+      
+      // 检查是否包含任务结束的消息
+      if (content.includes('任务结束')) {
+        // 延迟一点时间关闭连接，确保所有数据都已接收
+        setTimeout(() => {
+          clearTimeout(timeoutId)
+          try {
+            eventSource.close()
+          } catch (e) {
+            console.log('EventSource 已经关闭')
+          }
+          isLoading.value = false
+        }, 500)
+      }
     }
   }
   
@@ -104,6 +132,7 @@ const sendMessage = () => {
   }
   
   eventSource.onerror = (error) => {
+    clearTimeout(timeoutId)
     console.error('SSE Error:', error)
     // 检查连接状态，如果是正常关闭则不显示错误
     // readyState === 2 表示连接已关闭
