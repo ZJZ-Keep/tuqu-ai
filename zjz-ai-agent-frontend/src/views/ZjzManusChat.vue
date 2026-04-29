@@ -34,6 +34,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { API_BASE_URL } from '../config'
 
 const messages = ref([])
 const inputMessage = ref('')
@@ -61,8 +62,8 @@ const sendMessage = () => {
   inputMessage.value = ''
   isLoading.value = true
   
-  // 调用SSE接口
-  const url = `http://localhost:8081/api/ai/zjz_manus/chat/SseEmitter?message=${encodeURIComponent(userMessage)}`
+  // 调用 SSE 接口
+  const url = `${API_BASE_URL}/ai/zjz_manus/chat/SseEmitter?message=${encodeURIComponent(userMessage)}`
   
   if (eventSource) {
     eventSource.close()

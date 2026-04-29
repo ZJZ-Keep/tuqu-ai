@@ -17,6 +17,7 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -118,6 +119,7 @@ public class PlanApp {
      * @return
      */
     @Resource
+    @Lazy //  注入时也加懒加载
     private VectorStore planAppVectorStore;
     @Resource
     private DashScopeDocumentRetrievalAdvisor planAppDashScopeAdvisor;

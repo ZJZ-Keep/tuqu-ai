@@ -9,28 +9,30 @@
           <span class="title-accent">AGENT</span>
         </h1>
         <div class="subtitle">
-          <span class="cursor-blink">_</span>
+          <span class="subtitle-text">探索 AI 的无限可能</span>
         </div>
       </div>
       
       <div class="app-cards">
         <div class="app-card" @click="goToPlanApp">
-          <div class="card-icon">✈️</div>
+          <div class="card-icon-wrapper">
+            <span class="card-icon">✈️</span>
+          </div>
           <h2>途趣AI行程规划大师</h2>
           <p>智能行程规划，为您定制完美旅行方案</p>
-          <div class="card-border"></div>
           <button>
-            <span>进入应用</span>
+            <span>立即体验</span>
             <span class="arrow">→</span>
           </button>
         </div>
         <div class="app-card" @click="goToZjzManus">
-          <div class="card-icon">🤖</div>
+          <div class="card-icon-wrapper">
+            <span class="card-icon">🤖</span>
+          </div>
           <h2>AI超级智能体</h2>
           <p>多步骤智能处理，解决复杂问题</p>
-          <div class="card-border"></div>
           <button>
-            <span>进入应用</span>
+            <span>立即体验</span>
             <span class="arrow">→</span>
           </button>
         </div>
@@ -74,7 +76,7 @@ const goToZjzManus = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 60px 20px;
 }
 
 .bg-grid {
@@ -110,20 +112,22 @@ const goToZjzManus = () => {
 .content-wrapper {
   position: relative;
   z-index: 10;
-  max-width: 1200px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .header-section {
   text-align: center;
-  margin-bottom: 80px;
+  margin-bottom: 60px;
 }
 
 .home-title {
-  font-size: 4.5rem;
+  font-size: 4rem;
   font-weight: 900;
-  letter-spacing: 8px;
-  margin: 0 0 20px 0;
+  letter-spacing: 6px;
+  margin: 0 0 15px 0;
   font-family: 'Courier New', monospace;
 }
 
@@ -155,28 +159,29 @@ const goToZjzManus = () => {
 
 .subtitle {
   font-size: 1.2rem;
-  color: #666;
+  color: #888;
   font-family: 'Courier New', monospace;
 }
 
-.cursor-blink {
-  color: #00ffff;
-  animation: blink 1s step-end infinite;
+.subtitle-text {
+  position: relative;
 }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+.subtitle-text::before,
+.subtitle-text::after {
+  content: '/';
+  margin: 0 15px;
+  color: #00ffff;
+  opacity: 0.6;
 }
 
 .app-cards {
   display: flex;
-  gap: 50px;
+  gap: 40px;
   justify-content: center;
   align-items: stretch;
   flex-wrap: wrap;
-  margin-bottom: 80px;
-  padding: 0 20px;
+  margin-bottom: 60px;
 }
 
 .app-card {
@@ -185,9 +190,8 @@ const goToZjzManus = () => {
   border-radius: 20px;
   padding: 50px 40px;
   width: 100%;
-  max-width: 450px;
-  flex: 1;
-  min-width: 320px;
+  max-width: 420px;
+  min-width: 300px;
   text-align: center;
   cursor: pointer;
   position: relative;
@@ -214,8 +218,8 @@ const goToZjzManus = () => {
   transform: translateY(-10px) scale(1.02);
   border-color: #00ffff;
   box-shadow: 
-    0 0 20px rgba(0, 255, 255, 0.4),
-    0 0 40px rgba(0, 255, 255, 0.2),
+    0 0 30px rgba(0, 255, 255, 0.5),
+    0 0 60px rgba(0, 255, 255, 0.25),
     0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
@@ -226,54 +230,60 @@ const goToZjzManus = () => {
 .app-card:nth-child(2):hover {
   border-color: #ff00ff;
   box-shadow: 
-    0 0 20px rgba(255, 0, 255, 0.4),
-    0 0 40px rgba(255, 0, 255, 0.2),
+    0 0 30px rgba(255, 0, 255, 0.5),
+    0 0 60px rgba(255, 0, 255, 0.25),
     0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
+.card-icon-wrapper {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 25px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 255, 255, 0.05));
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+}
+
+.app-card:nth-child(2) .card-icon-wrapper {
+  background: linear-gradient(135deg, rgba(255, 0, 255, 0.2), rgba(255, 0, 255, 0.05));
+  box-shadow: 0 0 30px rgba(255, 0, 255, 0.3);
+}
+
 .card-icon {
-  font-size: 4rem;
-  margin-bottom: 20px;
-  filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.5));
+  font-size: 4.5rem;
+  filter: drop-shadow(0 0 15px rgba(0, 255, 255, 0.5));
 }
 
 .app-card:nth-child(2) .card-icon {
-  filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.5));
+  filter: drop-shadow(0 0 15px rgba(255, 0, 255, 0.5));
 }
 
 .app-card h2 {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   color: #fff;
-  margin: 0 0 15px 0;
+  margin: 0 0 12px 0;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 .app-card p {
   color: #aaa;
-  font-size: 1rem;
+  font-size: 0.95rem;
   line-height: 1.6;
-  margin: 0 0 25px 0;
-}
-
-.card-border {
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #00ffff, transparent);
-  margin-bottom: 25px;
-}
-
-.app-card:nth-child(2) .card-border {
-  background: linear-gradient(90deg, transparent, #ff00ff, transparent);
+  margin: 0 0 30px 0;
 }
 
 .app-card button {
-  background: transparent;
-  border: 2px solid #00ffff;
-  color: #00ffff;
+  background: linear-gradient(135deg, #00ffff, #00d4ff);
+  border: none;
+  color: #0a0a0f;
   padding: 14px 40px;
   font-size: 1rem;
-  font-weight: 600;
-  border-radius: 8px;
+  font-weight: 700;
+  border-radius: 30px;
   cursor: pointer;
   transition: all 0.3s;
   position: relative;
@@ -283,44 +293,23 @@ const goToZjzManus = () => {
   justify-content: center;
   gap: 8px;
   margin: 0 auto;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
 }
 
 .app-card:nth-child(2) button {
-  border-color: #ff00ff;
-  color: #ff00ff;
-}
-
-.app-card button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.3), transparent);
-  transition: left 0.5s;
-}
-
-.app-card:nth-child(2) button::before {
-  background: linear-gradient(90deg, transparent, rgba(255, 0, 255, 0.3), transparent);
-}
-
-.app-card button:hover::before {
-  left: 100%;
+  background: linear-gradient(135deg, #ff00ff, #d400ff);
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+  color: #0a0a0f;
 }
 
 .app-card button:hover {
-  background: #00ffff;
-  color: #0a0a0f;
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  transform: scale(1.05);
+  box-shadow: 0 0 35px rgba(0, 255, 255, 0.6);
 }
 
 .app-card:nth-child(2) button:hover {
-  background: #ff00ff;
-  color: #0a0a0f;
-  box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+  box-shadow: 0 0 35px rgba(255, 0, 255, 0.6);
 }
 
 .app-card button .arrow {

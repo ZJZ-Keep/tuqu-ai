@@ -34,6 +34,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { API_BASE_URL } from '../config'
 
 const messages = ref([])
 const inputMessage = ref('')
@@ -76,8 +77,8 @@ const sendMessage = () => {
   const aiMessageIndex = messages.value.length
   messages.value.push({ isUser: false, content: '' })
   
-  // 调用SSE接口
-  const url = `http://localhost:8081/api/ai/plan_app/chat/Sse?message=${encodeURIComponent(userMessage)}&chatId=${chatId.value}`
+  // 调用 SSE 接口
+  const url = `${API_BASE_URL}/ai/plan_app/chat/Sse?message=${encodeURIComponent(userMessage)}&chatId=${chatId.value}`
   
   if (eventSource) {
     eventSource.close()

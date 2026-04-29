@@ -8,6 +8,7 @@ import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ import java.util.List;
  **/
 @Configuration
 @Slf4j
+@Lazy //  加上这个注解！让整个配置类懒加载
 public class PlanAppVectorStoreConfig {
 
     @Resource

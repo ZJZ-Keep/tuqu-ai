@@ -3,6 +3,7 @@ import HomePage from '../views/HomePage.vue'
 import PlanAppChat from '../views/PlanAppChat.vue'
 import ZjzManusChat from '../views/ZjzManusChat.vue'
 
+
 const routes = [
   {
     path: '/',
