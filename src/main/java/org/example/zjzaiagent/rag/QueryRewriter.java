@@ -20,6 +20,7 @@ public class QueryRewriter {
                 .build();
     }
 
+
     public String doQueryRewrite(String prompt) {
         Query query = new Query(prompt);
         Query transform = queryTransformer.transform(query);

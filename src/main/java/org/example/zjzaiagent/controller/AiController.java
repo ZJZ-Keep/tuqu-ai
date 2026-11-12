@@ -63,7 +63,7 @@ public class AiController {
      * @return
      */
     @GetMapping("/plan_app/chat/SseEmitter")
-    public SseEmitter chatStreamSseEmitter(String message, String chatId) {
+    public  SseEmitter chatStreamSseEmitter(String message, String chatId) {
         // 创建SseEmitter对象
         SseEmitter sseEmitter = new SseEmitter(180000L);
          planApp.doChatStream(message, chatId)

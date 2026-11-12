@@ -1,11 +1,14 @@
 package org.example.zjzaiagent.app;
 
+import com.alibaba.cloud.ai.dashscope.agent.DashScopeAgentOptions;
 import com.alibaba.cloud.ai.dashscope.rag.DashScopeDocumentRetrievalAdvisor;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.example.zjzaiagent.advisor.MyLoggerAdvisor;
 import org.example.zjzaiagent.advisor.MySafeGuardAdvisor;
+import org.example.zjzaiagent.chatmemoy.FileBasedChatMemory;
 import org.example.zjzaiagent.chatmemoy.MySQLChatMemory;
+import org.example.zjzaiagent.rag.PlanAppRagCustomAdvisorFactory;
 import org.example.zjzaiagent.rag.QueryRewriter;
 import org.example.zjzaiagent.tools.ToolRegistration;
 import org.springframework.ai.chat.client.ChatClient;
@@ -113,7 +116,7 @@ public class PlanApp {
         return report;
     }
     /**
-     * rag检索对话
+     * rag检索对话                                                                                                                                       
      * @param message
      * @param chatId
      * @return
@@ -155,6 +158,7 @@ public class PlanApp {
         // 先调用 RAG 检索，再调用其他 advisor
         ChatResponse response = chatClient.prompt()
                 .user(rewriteMessage)
+                // 会话记忆拦截器
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
                 //  rag 检索对话(内存向量数据库)
                 .advisors(new QuestionAnswerAdvisor(planAppVectorStore, searchRequest))

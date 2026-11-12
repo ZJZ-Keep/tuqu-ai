@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  zjz-ai-agent:
+    build: .
+    container_name: zjz-ai-agent
+    ports:
+      - "8081:8081"
+    environment:
+      # 从 .env 文件自动读取变量
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - PG_HOST=${PG_HOST}
+      - PG_PORT=${PG_PORT}
+      - PG_USERNAME=${PG_USERNAME}
+      - PG_PASSWORD=${PG_PASSWORD}
+      - SEARCH_API_KEY=${SEARCH_API_KEY}
+      - SWAGGER_ENABLED=${SWAGGER_ENABLED}
+      - KNIFE4J_ENABLED=${KNIFE4J_ENABLED}
+    volumes:
+      - ./logs:/app/logs
+      - ./tmp:/app/tmp
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

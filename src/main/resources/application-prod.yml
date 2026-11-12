@@ -1,0 +1,77 @@
+spring:
+  ai:
+    dashscope:
+      api-key: ${DASHSCOPE_API_KEY}
+      chat:
+        options:
+          model: qwen-max
+        # 添加超时配置
+        timeout: 180s
+      embedding:
+        options:
+          model: text-embedding-v4
+        timeout: 180s
+
+  # MariaDB 数据源配置
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver  # ← 使用 MariaDB 驱动
+    url: jdbc:mariadb://${DB_HOST}:${DB_PORT}/zjz-ai-agent?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&connectTimeout=30000&socketTimeout=60000
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # QQ 邮箱配置
+  mail:
+    host: smtp.qq.com
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    port: 465
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
+          auth: true
+
+# PostgreSQL 数据源配置（用于 RAG 向量存储）
+postgres:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${PG_HOST}:${PG_PORT}/zjz-ai-agent?sslmode=require
+    username: ${PG_USERNAME}
+    password: ${PG_PASSWORD}
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 3
+
+# 搜索工具 API Key
+search-api:
+  api-key: ${SEARCH_API_KEY}
+
+# 服务器配置
+server:
+  port: ${SERVER_PORT:8081}
+
+# SpringDoc 配置（生产环境禁用）
+springdoc:
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}
+  api-docs:
+    enabled: ${API_DOCS_ENABLED:false}
+
+# Knife4j 配置（生产环境禁用）
+knife4j:
+  enable: ${KNIFE4J_ENABLED:false}
+
+# 日志配置
+logging:
+  level:
+    root: WARN
+    org.example.zjzaiagent: INFO
+  file:
+    name: logs/zjz-ai-agent.log

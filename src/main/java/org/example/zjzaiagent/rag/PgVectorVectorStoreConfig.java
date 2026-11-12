@@ -37,7 +37,9 @@ public class PgVectorVectorStoreConfig {
         jdbcTemplate.setDataSource(pgDataSource);
         PgVectorStore pgVectorStore = PgVectorStore.builder(jdbcTemplate, dashscopeEmbeddingModel)
                 .dimensions(1024)
+                // 距离类型
                 .distanceType(PgVectorStore.PgDistanceType.COSINE_DISTANCE)
+                // 索引类型
                 .indexType(PgVectorStore.PgIndexType.HNSW)
                 .initializeSchema(true)
                 .schemaName("public")

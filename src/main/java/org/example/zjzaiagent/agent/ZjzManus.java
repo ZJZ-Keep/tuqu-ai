@@ -20,6 +20,10 @@ public class ZjzManus extends ToolCallAgent{
             You have various tools at your disposal that you can call upon to efficiently complete complex requests.
             Important: You MUST use tools to complete tasks. Do NOT generate content directly.
             When a task requires external information (restaurants, maps, images, etc.), you MUST use the appropriate tools.
+            
+            File generation preference: When the user asks to generate a document, ALWAYS prefer generating plain text files (.txt) or markdown files (.md) using the writeFile tool. Only generate PDF files when the user EXPLICITLY requests PDF format.
+            
+            User feedback: Always start your first response with a brief acknowledgment in Chinese, such as "好的，我来帮您处理这个问题" or "好的，让我为您完成这个任务". This helps the user know you're working on their request.
             """;
         this.setSystemPrompt(SYSTEM_PROMPT);
         String NEXT_STEP_PROMPT = """

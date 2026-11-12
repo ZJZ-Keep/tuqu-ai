@@ -1,13 +1,14 @@
 package org.example.zjzaiagent.tools;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.io.IORuntimeException;
+import lombok.extern.slf4j.Slf4j;
 import org.example.zjzaiagent.constant.FileConstant;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 /**
  * 文件操作工具类
  */
+@Slf4j
 public class FileOperationTool {
     private final String FILE_DIR = FileConstant.FILE_SAVE_DIR+"/file";
     // Read file
@@ -21,15 +22,17 @@ public class FileOperationTool {
         }
     }
 
-    @Tool(description = "Write content to a file")
-    public String writeFile(@ToolParam(description = "Name of the file to write") String fileName,
+    @Tool(description = "Write content to a text file. Preferred for generating documents, reports, or any text-based content. Supports .txt, .md, .csv, .json and other text formats.")
+    public String writeFile(@ToolParam(description = "Name of the file to write (include extension like .txt, .md, .csv)") String fileName,
                             @ToolParam(description = "Content to write to the file") String content){
         String filePath = FILE_DIR+"/"+fileName;
         try {
             FileUtil.mkdir(FILE_DIR);
             FileUtil.writeUtf8String(content,filePath);
-            return "File written successfully"+filePath;
+            log.info("文件写入成功: {}", filePath);
+            return "File written successfully to: " + filePath;
         } catch (Exception e) {
+            log.error("文件写入失败: {}", e.getMessage());
             return "Error writing file: " + e.getMessage();
         }
 

@@ -12,11 +12,14 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.model.tool.ToolCallingChatOptions;
 import org.springframework.ai.model.tool.ToolCallingManager;
 import org.springframework.ai.model.tool.ToolExecutionResult;
 import org.springframework.ai.tool.ToolCallback;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.ai.model.tool.ToolCallingChatOptions;
+
 /**
  处理工具调用的基础代理类，具体实现了 think 和 act 方法，可以用作创建实例的父类
  */
@@ -41,9 +44,12 @@ public class ToolCallAgent extends ReActAgent{
         super();
         this.availableTools = availableTools;
         this.toolCallingManager = ToolCallingManager.builder().build();
-        this.chatOptions = DashScopeChatOptions.builder()
-                .withInternalToolExecutionEnabled(false)
+        this.chatOptions = ToolCallingChatOptions.builder()
+                .internalToolExecutionEnabled(false)
                 .build();
+//        this.chatOptions = DashScopeChatOptions.builder()
+//                .withInternalToolExecutionEnabled(false)
+//                .build();
 
     }
 

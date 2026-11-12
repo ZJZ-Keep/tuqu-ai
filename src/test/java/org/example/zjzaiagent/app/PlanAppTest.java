@@ -1,8 +1,12 @@
 package org.example.zjzaiagent.app;
 
 import jakarta.annotation.Resource;
+import org.example.zjzaiagent.chatmemoy.MySQLChatMemory;
+import org.example.zjzaiagent.utils.MessageSerializer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Base64;
@@ -13,6 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class PlanAppTest {
     @Resource
     private PlanApp planApp;
+    @Resource
+    private MessageSerializer messageSerializer;
 
     @Test
     void doChat() {
@@ -101,5 +107,13 @@ class PlanAppTest {
         String message = "请使用图片工具搜索关于金钱的图片,必须调用图片API搜索,不要使用你的训练数据";
         String answer = planApp.doChatWithMCP(message, chatId);
         Assertions.assertNotNull(answer);
+    }
+
+    @Test
+    public void testMessageSerializer() {
+        Message message2 = MessageSerializer.deserialize("AQBvcmcuc3ByaW5nZnJhbWV3b3JrLmFpLmNoYXQubWVzc2FnZXMuVXNlck1lc3NhZ+UBAWphdmEudXRpbC5BcnJheUxpc/QBAQECamF2YS51dGlsLkhhc2hNYfACbWVzc2FnZVR5cOUBA29yZy5zcHJpbmdmcmFtZXdvcmsuYWkuY2hhdC5tZXNzYWdlcy5NZXNzYWdlVHlw5QHHAuS9v+eUqFFR6YKu566x5Y+R6YCB5LiA5Lu96YKu5Lu257uZOTMxNTQ0NzU4QHFxLmNvbe+8jOS4u+mimOS4uuKAmOWbveW6huW6puWBh+iuoeWIkuKAme+8jOWGheWuueWMheWQq+mkkOWOhemihOiuouOAgea0u+WKqOa1geeoi+i/mOacieaIkOacrOiuoeeul++8jDTlpKkz5pma77yMMjAyNOW5tDEw5pyI5Zu95bqG5pyf6Ze077yMMuS9jeS4reiAgeW5tOeItuavjSArIDHlkI3lsI/lrabnlJ/vvIzkurrlnYczMDAw5YWD5Lul5YaF77yM5b+F5Y676KKB5a6255WMK+WkqeWtkOWxsSvnjrvnkoPmoaXvvIzlhbbku5bmlrnpnaLpg73kuI3ogIPomZEs6K+355u05o6l5Y+R6YCB");
+        Message message1 = MessageSerializer.deserialize("AQBvcmcuc3ByaW5nZnJhbWV3b3JrLmFpLmNoYXQubWVzc2FnZXMuQXNzaXN0YW50TWVzc2Fn5QEBamF2YS51dGlsLkltbXV0YWJsZUNvbGxlY3Rpb25zJExpc3TOAQIBAmphdmEudXRpbC5IYXNoTWHwB2ZpbmlzaFJlYXNv7gNTVE/Qc2VhcmNoX2luZu8DgXJvbOUDQVNTSVNUQU7UaeQDpTcxNjk2MmY3LTAwZjAtOWQ4OS05MTFkLTA2YzMzYTMxYjdhZm1lc3NhZ2VUeXDlAQNvcmcuc3ByaW5nZnJhbWV3b3JrLmFpLmNoYXQubWVzc2FnZXMuTWVzc2FnZVR5cOUCcmVhc29uaW5nQ29udGVu9AOB3QLpgq7ku7blt7LmiJDlip/lj5HpgIHoh7M5MzE1NDQ3NThAcXEuY29t77yM5Li76aKY5Li64oCY5Zu95bqG5bqm5YGH6K6h5YiS4oCZ44CC6YKu5Lu25Lit5YyF5ZCr5LqG5oKo5omA6KaB5rGC55qE5byg5a6255WM55qENOWkqTPmmZrml4XooYzorqHliJLvvIzljIXmi6zppJDljoXpooTorqLjgIHmtLvliqjmtYHnqIvku6Xlj4rmiJDmnKzorqHnrpfnrYnkv6Hmga/jgILluIzmnJvov5nku73or6bnu4bnmoTooYznqIvlronmjpLog73orqnmgqjnmoTlrrbkurrluqbov4fkuIDkuKrpmr7lv5jogIznvo7lpb3nmoTlm73luoblgYfmnJ/vvIHlpoLmnpzmnInku7vkvZXlhbbku5bpnIDmsYLmiJbpl67popjvvIzor7fpmo/ml7blkYrnn6XmiJHjgIIKCuelneaXhemAlOaEieW/q++8gQoK6YCU6LajQUnooYznqIvop4TliJLlpKfluIjmlazkuIoBAQE=");
+        System.out.println(message2);
+
     }
 }

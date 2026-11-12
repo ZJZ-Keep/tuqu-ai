@@ -107,6 +107,7 @@ public abstract class BaseAgent {
         } catch (IOException e) {
             sseEmitter.completeWithError(e);
         }
+        //
         CompletableFuture.runAsync(()->{
             //更改状态
             this.agentStatus = AgentStatus.RUNNING;
@@ -115,9 +116,13 @@ public abstract class BaseAgent {
             //结果列表
             List<String> resultList = new ArrayList<>();
             try {
+                // 发送初始反馈消息，让用户知道正在处理
+                sseEmitter.send("好的，我收到了您的请求，正在为您处理，请稍候...");
                 for (int i = 0; i <MaxSteps&&this.agentStatus!=AgentStatus.FINISH; i++) {
                     currentStep++;
                     log.info("开始执行第" + currentStep + "步");
+                    // 发送步骤进度
+                    sseEmitter.send("正在执行第" + currentStep + "步...");
                     //执行单个步骤
                     String stepResult = this.step();
                     String result = "step" + currentStep + "结果：" + stepResult;
@@ -128,7 +133,7 @@ public abstract class BaseAgent {
                 if (currentStep >= MaxSteps) {
                     this.agentStatus = AgentStatus.FINISH;
                     resultList.add("超出最大步骤限制：" + MaxSteps);
-                    sseEmitter.send("超出最大步骤限制：" + MaxSteps);
+                    sseEmitter.send("已达到最大步骤限制，任务结束。");
                 }
                 // 任务正常完成，关闭SSE连接
                 sseEmitter.complete();

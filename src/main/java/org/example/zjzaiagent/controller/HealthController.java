@@ -1,5 +1,8 @@
 package org.example.zjzaiagent.controller;
 
+import org.example.zjzaiagent.common.BaseResponse;
+import org.example.zjzaiagent.common.ErrorEnum;
+import org.example.zjzaiagent.common.ResultUtil;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -9,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HealthController {
 
     @GetMapping
-    public String healthCheck() {
-        return "ok";
+    public BaseResponse<String> healthCheck() {
+        return ResultUtil.error(ErrorEnum.PARAM_ERROR) ;
     }
 }
