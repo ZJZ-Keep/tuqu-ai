@@ -12,14 +12,21 @@
           <span class="subtitle-text">探索 AI 的无限可能</span>
         </div>
       </div>
-      
+
       <div class="app-cards">
         <div class="app-card" @click="goToPlanApp">
           <div class="card-icon-wrapper">
             <span class="card-icon">✈️</span>
           </div>
           <h2>途趣AI行程规划大师</h2>
-          <p>智能行程规划，为您定制完美旅行方案</p>
+          <p class="card-desc">专业旅行规划 AI，为您定制详细、合理、可落地的行程方案</p>
+          <div class="feature-tags">
+            <span class="tag"> 智能行程规划</span>
+            <span class="tag">💬 多轮对话记忆</span>
+            <span class="tag">📚 RAG 知识库</span>
+            <span class="tag">️ 敏感词过滤</span>
+            <span class="tag">📊 结构化报告</span>
+          </div>
           <button>
             <span>立即体验</span>
             <span class="arrow">→</span>
@@ -27,17 +34,27 @@
         </div>
         <div class="app-card" @click="goToZjzManus">
           <div class="card-icon-wrapper">
-            <span class="card-icon">🤖</span>
+            <span class="card-icon"></span>
           </div>
           <h2>AI超级智能体</h2>
-          <p>多步骤智能处理，解决复杂问题</p>
+          <p class="card-desc">全能型 AI 助手，自主调用多种工具，分步解决复杂任务</p>
+          <div class="feature-tags">
+            <span class="tag">🔍 网页搜索</span>
+            <span class="tag">🌐 网页抓取</span>
+            <span class="tag"> 文件读写</span>
+            <span class="tag">📄 PDF 生成</span>
+            <span class="tag">📧 邮件发送</span>
+            <span class="tag">⌨️ 终端操作</span>
+            <span class="tag">⬇️ 资源下载</span>
+            <span class="tag">🔄 多步任务编排</span>
+          </div>
           <button>
             <span>立即体验</span>
             <span class="arrow">→</span>
           </button>
         </div>
       </div>
-      
+
       <div class="footer">
         <div class="footer-line"></div>
         <p>
@@ -85,9 +102,9 @@ const goToZjzManus = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
-    linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+  background-image:
+      linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
   animation: gridMove 20s linear infinite;
 }
@@ -133,21 +150,21 @@ const goToZjzManus = () => {
 
 .title-glow {
   color: #00ffff;
-  text-shadow: 
-    0 0 10px #00ffff,
-    0 0 20px #00ffff,
-    0 0 40px #00ffff,
-    0 0 80px #00ffff;
+  text-shadow:
+      0 0 10px #00ffff,
+      0 0 20px #00ffff,
+      0 0 40px #00ffff,
+      0 0 80px #00ffff;
   animation: glowPulse 2s ease-in-out infinite;
 }
 
 .title-accent {
   color: #ff00ff;
-  text-shadow: 
-    0 0 10px #ff00ff,
-    0 0 20px #ff00ff,
-    0 0 40px #ff00ff,
-    0 0 80px #ff00ff;
+  text-shadow:
+      0 0 10px #ff00ff,
+      0 0 20px #ff00ff,
+      0 0 40px #ff00ff,
+      0 0 80px #ff00ff;
   animation: glowPulse 2s ease-in-out infinite;
   animation-delay: 1s;
 }
@@ -190,8 +207,8 @@ const goToZjzManus = () => {
   border-radius: 20px;
   padding: 50px 40px;
   width: 100%;
-  max-width: 420px;
-  min-width: 300px;
+  max-width: 480px;
+  min-width: 320px;
   text-align: center;
   cursor: pointer;
   position: relative;
@@ -217,10 +234,10 @@ const goToZjzManus = () => {
 .app-card:hover {
   transform: translateY(-10px) scale(1.02);
   border-color: #00ffff;
-  box-shadow: 
-    0 0 30px rgba(0, 255, 255, 0.5),
-    0 0 60px rgba(0, 255, 255, 0.25),
-    0 20px 40px rgba(0, 0, 0, 0.5);
+  box-shadow:
+      0 0 30px rgba(0, 255, 255, 0.5),
+      0 0 60px rgba(0, 255, 255, 0.25),
+      0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .app-card:hover::before {
@@ -229,10 +246,10 @@ const goToZjzManus = () => {
 
 .app-card:nth-child(2):hover {
   border-color: #ff00ff;
-  box-shadow: 
-    0 0 30px rgba(255, 0, 255, 0.5),
-    0 0 60px rgba(255, 0, 255, 0.25),
-    0 20px 40px rgba(0, 0, 0, 0.5);
+  box-shadow:
+      0 0 30px rgba(255, 0, 255, 0.5),
+      0 0 60px rgba(255, 0, 255, 0.25),
+      0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .card-icon-wrapper {
@@ -269,11 +286,48 @@ const goToZjzManus = () => {
   letter-spacing: 1px;
 }
 
-.app-card p {
-  color: #aaa;
+.card-desc {
+  color: #bbb;
   font-size: 0.95rem;
   line-height: 1.6;
+  margin: 0 0 20px 0;
+}
+
+.feature-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
   margin: 0 0 30px 0;
+  padding: 0 10px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  border-radius: 20px;
+  background: rgba(0, 255, 255, 0.08);
+  border: 1px solid rgba(0, 255, 255, 0.25);
+  color: #00e5e5;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.app-card:hover .tag {
+  background: rgba(0, 255, 255, 0.12);
+  border-color: rgba(0, 255, 255, 0.4);
+}
+
+.app-card:nth-child(2) .tag {
+  background: rgba(255, 0, 255, 0.08);
+  border: 1px solid rgba(255, 0, 255, 0.25);
+  color: #e500e5;
+}
+
+.app-card:nth-child(2):hover .tag {
+  background: rgba(255, 0, 255, 0.12);
+  border-color: rgba(255, 0, 255, 0.4);
 }
 
 .app-card button {
@@ -363,13 +417,22 @@ const goToZjzManus = () => {
     font-size: 2.5rem;
     letter-spacing: 4px;
   }
-  
+
   .app-cards {
     gap: 20px;
   }
-  
+
   .app-card {
     padding: 30px 20px;
+  }
+
+  .feature-tags {
+    gap: 6px;
+  }
+
+  .tag {
+    font-size: 0.72rem;
+    padding: 5px 10px;
   }
 }
 </style>
