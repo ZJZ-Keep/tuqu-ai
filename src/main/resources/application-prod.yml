@@ -1,12 +1,20 @@
 spring:
   ai:
-    dashscope:
-      api-key: ${DASHSCOPE_API_KEY}
+    # 显式选择模型：openai 与 dashscope 两个 starter 都带 matchIfMissing=true，
+    # 不写这两行会同时自动配置，出现两个 ChatModel / EmbeddingModel Bean
+    model:
+      chat: openai
+      embedding: dashscope
+    # chat 走 OpenAI 兼容接口（DeepSeek），与本地开发一致
+    openai:
+      api-key: ${SPRING_AI_OPENAI_API_KEY}
+      base-url: ${SPRING_AI_OPENAI_BASE_URL}
       chat:
         options:
-          model: qwen-max
-        # 添加超时配置
-        timeout: 180s
+          model: ${SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL:deepseek-v4.1-flash-1017}
+    # embedding 仍用百炼
+    dashscope:
+      api-key: ${DASHSCOPE_API_KEY}
       embedding:
         options:
           model: text-embedding-v4
@@ -25,18 +33,12 @@ spring:
       idle-timeout: 600000
       max-lifetime: 1800000
 
-  # QQ 邮箱配置
+  # QQ 邮箱配置（587 + STARTTLS；465 是隐式 SSL，当前邮件工具只支持 STARTTLS）
   mail:
     host: smtp.qq.com
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
-    port: 465
-    properties:
-      mail:
-        smtp:
-          ssl:
-            enable: true
-          auth: true
+    port: 587
 
 # PostgreSQL 数据源配置（用于 RAG 向量存储）
 postgres:

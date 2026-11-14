@@ -23,7 +23,8 @@
       <div
           v-for="(msg, index) in messages"
           :key="index"
-          :class="['message', msg.isUser ? 'user-message' : 'ai-message', msg.isProgress ? 'progress-message' : '']"
+          :class="['message', msg.isUser ? 'user-message' : 'ai-message',
+                  'kind-' + msg.kind, msg.kind === 'progress' ? 'progress-message' : '']"
       >
         <!-- AI 头像 -->
         <div v-if="!msg.isUser" class="avatar ai-avatar">
@@ -41,16 +42,53 @@
           </svg>
         </div>
         <div class="message-content">
-          <template v-if="msg.fileInfo">
-            <div class="message-text" v-if="msg.textBeforeFile">{{ msg.textBeforeFile }}</div>
+          <!-- 文件卡片 -->
+          <template v-if="msg.kind === 'file'">
             <FilePreview :subDir="msg.fileInfo.subDir" :fileName="msg.fileInfo.fileName" />
           </template>
+
+          <!-- 工具执行卡片：一句话结论 + 可折叠的原始输出 -->
+          <template v-else-if="msg.kind === 'tool'">
+            <div class="tool-card" :class="{ failed: msg.success === false }">
+              <div class="tool-head" @click="toggleDetail(msg)">
+                <span class="tool-icon">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                  </svg>
+                </span>
+                <span class="tool-label">{{ msg.nameLabel }}</span>
+                <span class="tool-summary">{{ msg.content }}</span>
+                <span class="tool-status" :class="msg.success === false ? 'bad' : 'good'">
+                  {{ msg.success === false ? '失败' : '完成' }}
+                </span>
+                <span v-if="msg.detail" class="tool-toggle">{{ msg.expanded ? '收起' : '详情' }}</span>
+              </div>
+              <pre v-if="msg.expanded && msg.detail" class="tool-detail">{{ msg.detail }}</pre>
+            </div>
+          </template>
+
+          <!-- 错误 -->
+          <template v-else-if="msg.kind === 'error'">
+            <div class="error-bubble">
+              <span class="error-icon">!</span>
+              <span>{{ msg.content }}</span>
+            </div>
+          </template>
+
+          <!-- 最终答复 -->
+          <template v-else-if="msg.kind === 'final'">
+            <div class="final-text">{{ msg.content }}</div>
+            <div class="final-badge">已完成</div>
+          </template>
+
+          <!-- 进度 / 思考 / 普通文本 -->
           <template v-else>
-            <span v-if="msg.isProgress" class="progress-indicator">
+            <span v-if="msg.kind === 'progress'" class="progress-indicator">
               <span class="progress-dot"></span>
               {{ msg.content }}
             </span>
-            <span v-else>{{ msg.content }}</span>
+            <span v-else class="plain-text">{{ msg.content }}</span>
           </template>
         </div>
       </div>
@@ -108,24 +146,24 @@ const inputMessage = ref('')
 const isLoading = ref(false)
 const messagesContainer = ref(null)
 let eventSource = null
+let inactivityTimer = null
 
-// 支持更多文件类型检测
-const FILE_PATH_REGEX = /(?:tmp[\\/])(file|pdf|download|doc|docx)[\\/](.+?\.(?:pdf|txt|md|doc|docx|csv|json|jpg|jpeg|png|gif|webp|bmp|svg|html|xml|log|yml|yaml|zip|rar|xlsx|xls|pptx))(?:["\s,;]|$)/i
-// 备用简单正则：匹配 tmp 下任何子目录的文件
-const FILE_PATH_SIMPLE_REGEX = /(?:tmp[\\/])(\w+)[\\/](\S+\.\w{2,5})/
+const WELCOME = '你好！我是AI超级智能体，有什么问题需要我帮您解决吗？我可以帮您搜索信息、读写文件、生成文档、发送邮件等。'
 
-const parseFileInfo = (content) => {
-  let match = content.match(FILE_PATH_REGEX)
-  if (!match) {
-    match = content.match(FILE_PATH_SIMPLE_REGEX)
-  }
-  if (match) {
-    return {
-      subDir: match[1],
-      fileName: match[2].replace(/\\/g, '').replace(/[",;]+$/, '')
-    }
-  }
-  return null
+// 无任何事件的最长等待时间（服务端每 15 秒有心跳，正常不会触发）
+const INACTIVITY_TIMEOUT = 10 * 60 * 1000
+
+const TOOL_LABELS = {
+  writeFile: '写入文件',
+  readFile: '读取文件',
+  generatePDF: '生成 PDF',
+  sendTextEmail: '发送邮件',
+  sendEmailWithAttachment: '发送带附件邮件',
+  executeTerminalCommand: '执行命令',
+  downloadResource: '下载资源',
+  scrapeWeb: '网页抓取',
+  searchWeb: '网络搜索',
+  doTerminate: '结束任务'
 }
 
 const scrollToBottom = () => {
@@ -136,8 +174,16 @@ const scrollToBottom = () => {
   })
 }
 
-const resetLoadingState = () => {
+const clearTimers = () => {
+  if (inactivityTimer) {
+    clearTimeout(inactivityTimer)
+    inactivityTimer = null
+  }
+}
+
+const stopStream = () => {
   isLoading.value = false
+  clearTimers()
   if (eventSource) {
     try {
       eventSource.close()
@@ -148,18 +194,112 @@ const resetLoadingState = () => {
   }
 }
 
+const resetInactivityTimer = () => {
+  clearTimers()
+  inactivityTimer = setTimeout(() => {
+    if (isLoading.value) {
+      isLoading.value = false
+      messages.value.push({
+        kind: 'error',
+        content: '长时间没有收到新的进度，任务可能仍在后台继续执行。可以稍后刷新页面查看，或重新发起请求。'
+      })
+      scrollToBottom()
+    }
+  }, INACTIVITY_TIMEOUT)
+}
+
 const clearMessages = () => {
-  messages.value = [{
+  stopStream()
+  messages.value = [{ isUser: false, kind: 'text', content: WELCOME }]
+}
+
+const toggleDetail = (msg) => {
+  if (!msg.detail) return
+  msg.expanded = !msg.expanded
+}
+
+const pushProgress = (text) => {
+  const last = messages.value[messages.value.length - 1]
+  if (last && last.kind === 'progress') {
+    last.content = text
+  } else {
+    messages.value.push({ isUser: false, kind: 'progress', content: text })
+  }
+}
+
+const pushFile = (subDir, fileName) => {
+  if (!subDir || !fileName) return
+  const exists = messages.value.some(
+    (m) => m.kind === 'file' && m.fileInfo && m.fileInfo.subDir === subDir && m.fileInfo.fileName === fileName
+  )
+  if (exists) return
+  messages.value.push({
     isUser: false,
-    content: '你好！我是AI超级智能体，有什么问题需要我帮您解决吗？我可以帮您搜索信息、读写文件、生成文档、发送邮件等。'
-  }]
+    kind: 'file',
+    fileName,
+    fileInfo: { subDir, fileName }
+  })
+}
+
+const handleEvent = (evt) => {
+  switch (evt.type) {
+    case 'progress':
+      pushProgress(evt.message || '正在处理…')
+      break
+    case 'thinking':
+      if (evt.message) {
+        messages.value.push({ isUser: false, kind: 'thinking', content: evt.message })
+      }
+      break
+    case 'tool':
+      messages.value.push({
+        isUser: false,
+        kind: 'tool',
+        name: evt.name,
+        nameLabel: TOOL_LABELS[evt.name] || evt.name || '工具',
+        content: evt.message || '执行完成',
+        detail: evt.detail || '',
+        success: evt.success !== false,
+        expanded: false
+      })
+      break
+    case 'file':
+      pushFile(evt.subDir, evt.fileName)
+      break
+    case 'final':
+      if (evt.message) {
+        messages.value.push({ isUser: false, kind: 'final', content: evt.message })
+      }
+      break
+    case 'error':
+      messages.value.push({ isUser: false, kind: 'error', content: evt.message || '执行出错' })
+      break
+    case 'done':
+      finishStream()
+      break
+    case 'ping':
+      // 心跳只用于重置超时计时器，不刷新界面
+      return
+    default:
+      if (evt.message) {
+        messages.value.push({ isUser: false, kind: 'thinking', content: evt.message })
+      }
+  }
+  scrollToBottom()
+}
+
+const finishStream = () => {
+  // 任务结束后清掉临时进度提示
+  messages.value = messages.value.filter((m) => m.kind !== 'progress')
+  stopStream()
+  scrollToBottom()
 }
 
 const sendMessage = () => {
   if (!inputMessage.value.trim() || isLoading.value) return
 
   const userMessage = inputMessage.value.trim()
-  messages.value.push({ isUser: true, content: userMessage })
+  messages.value.push({ isUser: true, kind: 'user', content: userMessage })
   inputMessage.value = ''
   isLoading.value = true
   scrollToBottom()
@@ -172,91 +312,62 @@ const sendMessage = () => {
 
   eventSource = new EventSource(url)
   let hasReceivedData = false
-  let messageCount = 0
-
-  const timeoutId = setTimeout(() => {
-    if (isLoading.value) {
-      resetLoadingState()
-      messages.value.push({ isUser: false, content: '请求超时，请重试。' })
-      scrollToBottom()
-    }
-  }, 120000)
+  resetInactivityTimer()
 
   eventSource.onmessage = (event) => {
-    const data = event.data
-    if (data === '[DONE]') {
-      clearTimeout(timeoutId)
-      resetLoadingState()
-      scrollToBottom()
-    } else {
-      hasReceivedData = true
-      messageCount++
+    const raw = event.data
+    if (!raw) return
+    resetInactivityTimer()
 
-      const fileInfo = parseFileInfo(data)
-      const isProgress = data.startsWith('正在执行第') || data.startsWith('好的，我收到了')
-      const msg = {
-        isUser: false,
-        content: data,
-        isProgress: isProgress
+    if (raw === '[DONE]') {
+      finishStream()
+      return
+    }
+
+    hasReceivedData = true
+    let evt
+    try {
+      evt = JSON.parse(raw)
+    } catch (e) {
+      // 兼容旧的纯文本消息：过滤掉原始 “stepN结果：工具：...” 内容
+      if (/^step\d+结果[：:]/.test(raw)) {
+        return
       }
-
-      if (fileInfo) {
-        msg.fileInfo = fileInfo
-        // 提取文件路径前的文字
-        const fileIdx = data.indexOf('tmp')
-        if (fileIdx > 0) {
-          msg.textBeforeFile = data.substring(0, fileIdx).replace(/[:\s]+$/, '')
-        }
-      }
-
-      messages.value.push(msg)
-      scrollToBottom()
-
-      // 检测任务完成关键词
-      if (data.includes('任务结束') || data.includes('圆满结束') ||
-          data.includes('任务已完成') || data.includes('已成功生成') ||
-          data.includes('已达到最大步骤限制')) {
-        setTimeout(() => {
-          clearTimeout(timeoutId)
-          resetLoadingState()
-          scrollToBottom()
-        }, 500)
+      const isProgress = raw.startsWith('正在执行第') || raw.startsWith('好的，我收到了')
+      evt = {
+        type: isProgress ? 'progress' : 'thinking',
+        message: raw
       }
     }
+    handleEvent(evt)
   }
 
   eventSource.onopen = () => {
     console.log('SSE 连接已建立')
   }
 
-  eventSource.onerror = (error) => {
-    clearTimeout(timeoutId)
-    if (eventSource.readyState === EventSource.CLOSED) {
-      console.log('SSE 连接已正常关闭')
-      resetLoadingState()
+  eventSource.onerror = () => {
+    if (eventSource && eventSource.readyState === EventSource.CLOSED) {
+      console.log('SSE 连接已关闭')
+      finishStream()
     } else if (hasReceivedData) {
-      // 已收到数据后的error通常是服务端正常关闭连接，不算错误
-      console.log('SSE 连接正常结束（已收到数据）')
-      resetLoadingState()
+      // 服务端已结束推送时常见，按正常结束处理
+      finishStream()
     } else {
-      // 没有收到任何数据就出错，才是真的错误
-      console.error('SSE Error:', error)
-      messages.value.push({ isUser: false, content: '连接出错，请重试。' })
-      resetLoadingState()
+      isLoading.value = false
+      clearTimers()
+      messages.value.push({ isUser: false, kind: 'error', content: '连接后端失败，请确认后端服务已启动后重试。' })
       scrollToBottom()
     }
   }
 }
 
 onMounted(() => {
-  messages.value.push({
-    isUser: false,
-    content: '你好！我是AI超级智能体，有什么问题需要我帮您解决吗？我可以帮您搜索信息、读写文件、生成文档、发送邮件等。'
-  })
+  messages.value.push({ isUser: false, kind: 'text', content: WELCOME })
 })
 
 onUnmounted(() => {
-  resetLoadingState()
+  stopStream()
 })
 </script>
 
@@ -406,6 +517,7 @@ onUnmounted(() => {
   word-wrap: break-word;
   white-space: pre-wrap;
   overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .ai-message .message-content {
@@ -422,17 +534,13 @@ onUnmounted(() => {
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
 }
 
-.message-text {
-  margin-bottom: 8px;
-  color: #555;
-}
-
-/* Progress message */
+/* 进度 */
 .progress-message .message-content {
   background: #f0f4ff;
   color: #667eea;
   font-size: 0.85rem;
   padding: 8px 14px;
+  box-shadow: none;
 }
 
 .progress-indicator {
@@ -447,11 +555,151 @@ onUnmounted(() => {
   border-radius: 50%;
   background: #667eea;
   animation: pulse 1.5s infinite;
+  flex-shrink: 0;
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 0.4; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.3); }
+}
+
+/* 工具卡片 */
+.kind-tool .message-content {
+  padding: 6px 8px;
+  background: #f8fafc;
+  border: 1px solid #e8edf5;
+  box-shadow: none;
+  width: 100%;
+}
+
+.tool-card {
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
+}
+
+.tool-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  user-select: none;
+}
+
+.tool-head:hover {
+  background: #f7f9ff;
+}
+
+.tool-icon {
+  color: #8b9bb4;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.tool-label {
+  color: #4a5568;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.tool-summary {
+  flex: 1;
+  min-width: 0;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tool-status {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.tool-status.good {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.tool-status.bad {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.tool-card.failed .tool-icon {
+  color: #ef4444;
+}
+
+.tool-toggle {
+  font-size: 0.72rem;
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.tool-detail {
+  margin: 0;
+  padding: 10px 12px;
+  border-top: 1px solid #eef2f7;
+  background: #fbfcfe;
+  color: #475569;
+  font-size: 0.74rem;
+  line-height: 1.55;
+  font-family: 'Courier New', monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* 错误 */
+.kind-error .message-content {
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  color: #c53030;
+  box-shadow: none;
+}
+
+.error-bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.error-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fc8181;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* 最终答复 */
+.kind-final .message-content {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  box-shadow: none;
+}
+
+.final-badge {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.7rem;
+  color: #047857;
+  background: #d1fae5;
+  padding: 2px 8px;
+  border-radius: 999px;
 }
 
 /* Typing indicator */

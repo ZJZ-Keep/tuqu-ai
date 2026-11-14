@@ -85,7 +85,7 @@ public class AiController {
      * @param message
      * @return
      */
-    @GetMapping("/zjz_manus/chat/SseEmitter")
+    @GetMapping(value = "/zjz_manus/chat/SseEmitter", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter ZjzManusStream(String message) {
         ZjzManus zjzManus = new ZjzManus(allTools, dashscopeChatModel);
         return zjzManus.runStream(message);

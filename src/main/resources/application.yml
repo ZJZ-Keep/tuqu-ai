@@ -31,6 +31,10 @@ spring:
           connections:
             servers1:
               url: http://47.120.65.115:8127
+  mvc:
+    async:
+      # 智能体任务可能持续十几分钟，SSE 异步请求不能按默认 30 秒超时
+      request-timeout: 1800000
 server:
   port: 8081
   servlet:
