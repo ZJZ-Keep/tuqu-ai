@@ -2,6 +2,13 @@
   <div class="chat-container">
     <div class="chat-header">
       <div class="header-content">
+        <button class="back-btn" @click="goHome" title="返回首页">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          <span class="back-text">返回</span>
+        </button>
         <div class="header-icon">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
@@ -73,12 +80,19 @@
             @keyup.enter="sendMessage"
             :disabled="isLoading"
         />
-        <button @click="sendMessage" :disabled="isLoading || !inputMessage.trim()">
-          <svg v-if="!isLoading" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="22" y1="2" x2="11" y2="13"/>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
-          <svg v-else class="spin" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <button
+            class="send-btn"
+            @click="sendMessage"
+            :disabled="isLoading || !inputMessage.trim()"
+            :title="isLoading ? '正在处理…' : '发送'"
+        >
+          <template v-if="!isLoading">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M3.4 20.4l17.4-8.4a.6.6 0 0 0 0-1.1L3.4 2.5a.6.6 0 0 0-.8.8L5.6 11H13a1 1 0 0 1 0 2H5.6l-3 7.6a.6.6 0 0 0 .8.8z"/>
+            </svg>
+            <span class="send-text">发送</span>
+          </template>
+          <svg v-else class="spin" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12a9 9 0 11-6.219-8.56"/>
           </svg>
         </button>
@@ -92,8 +106,12 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { API_BASE_URL } from '../config'
 import FilePreview from '../components/FilePreview.vue'
+
+const router = useRouter()
+const goHome = () => router.push({ name: 'home' })
 
 const messages = ref([])
 const inputMessage = ref('')
@@ -316,6 +334,31 @@ onUnmounted(() => {
   display: block;
 }
 
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.25);
+  color: #1a3a2a;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,0.4);
+  transform: translateX(-2px);
+}
+
+.back-text {
+  white-space: nowrap;
+}
+
 .clear-btn {
   width: 36px;
   height: 36px;
@@ -476,16 +519,21 @@ onUnmounted(() => {
 }
 
 .chat-input button {
-  width: 40px;
   height: 40px;
+  min-width: 64px;
+  padding: 0 14px;
   border-radius: 12px;
   border: none;
   background: linear-gradient(135deg, #43e97b, #38f9d7);
-  color: #1a3a2a;
+  color: #14352a;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
   transition: all 0.2s;
   flex-shrink: 0;
 }
@@ -537,6 +585,10 @@ onUnmounted(() => {
   }
 
   .header-subtitle {
+    display: none;
+  }
+
+  .back-text {
     display: none;
   }
 
