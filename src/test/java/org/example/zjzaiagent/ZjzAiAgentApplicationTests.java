@@ -15,7 +15,9 @@ import java.util.Map;
 @SpringBootTest
 class ZjzAiAgentApplicationTests {
 
-    @Resource
+    // 容器里有 planAppVectorStore 和 pgvector 自动配置的 vectorStore 两个 Bean，
+    // 必须按名字注入，否则会报 NoUniqueBeanDefinitionException
+    @Resource(name = "planAppVectorStore")
     private VectorStore pgVectorStore;
 
     @Test

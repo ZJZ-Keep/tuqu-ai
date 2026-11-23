@@ -9,6 +9,7 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Primary;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class PlanAppVectorStoreConfig {
     @Resource
     private MyKeyWordEnricher myKeyWordEnricher;
     @Bean
+    @Primary
     VectorStore planAppVectorStore(EmbeddingModel dashscopeEmbeddingModel){
         // 创建内存向量存储
         SimpleVectorStore vectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel)
